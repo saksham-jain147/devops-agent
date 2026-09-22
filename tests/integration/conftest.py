@@ -23,7 +23,7 @@ def patch_llm(monkeypatch):
         fake = make_fake_llm(responses)
         monkeypatch.setattr("devops_agent.agent.graph.build_llm", lambda *a, **kw: fake)
         # Clear the graph cache so next request builds a fresh graph with the patched LLM
-        from devops_agent.api.server import _get_graph
+        from devops_agent.agent.graph import _get_graph
 
         _get_graph.cache_clear()
         return fake

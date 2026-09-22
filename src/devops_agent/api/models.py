@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 
+from devops_agent.agent.output import AgentAnswer
+
 
 class QueryRequest(BaseModel):
     query: str
     dry_run: bool = True
 
 
-class QueryResponse(BaseModel):
-    answer: str
-    tool_calls: list[dict]
+QueryResponse = AgentAnswer

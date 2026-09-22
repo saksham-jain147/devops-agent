@@ -1,9 +1,8 @@
 import typer
-from langchain.messages import HumanMessage
 from rich.console import Console
 from rich.panel import Panel
 
-from devops_agent.agent.graph import build_graph
+from devops_agent.agent.graph import run_agent
 
 app = typer.Typer()
 console = Console()
@@ -12,10 +11,17 @@ console = Console()
 @app.command()
 def ask(query: str):
     """Ask the DevOps agent a question."""
-    graph = build_graph()
-    out = graph.invoke({"messages": [HumanMessage(content=query)]})
-    final = out["messages"][-1].content
-    console.print(Panel(str(final), title="Agent answer", border_style="cyan"))
+    out = run_agent(query)
+
+    console.print(Panel(out.answer, title="Answer", border_style="cyan"))
+
+    if out.tool_calls:
+        console.print("\n[bold]Tool calls:[/bold]")
+        for tc in out.tool_calls:
+            console.print(f"  • [green]{tc.name}[/green]({tc.args}) -> {tc.result_summary}")
+
+    console.print(f"\n[dim]confidence={out.confidence} · prompt={out.prompt_version}[/dim]")
+
 
 
 @app.command()
