@@ -2,6 +2,7 @@ import pytest  # noqa: F401
 
 from devops_agent.tools.inventory import (
     ServiceSummary,
+    ToolError,
     get_service_logs,
     get_service_status,
     list_services,
@@ -45,3 +46,17 @@ def test_get_service_logs_returns_no_logs_message_for_service_without_logs():
 def test_get_service_logs_respects_lines_limit():
     result = get_service_logs.invoke({"service_name": "billing-svc", "lines": 1})
     assert result.line_count == 1
+
+
+def test_list_services_returns_tool_error_when_provider_raises(monkeypatch):
+    from devops_agent.tools import inventory
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("simulated failure")
+
+    monkeypatch.setattr(inventory._provider, "list_services", boom)   # ← key change
+    result = list_services.invoke({})
+
+    assert isinstance(result, ToolError)
+    assert result.tool == "list_services"
+    assert "simulated failure" in result.error

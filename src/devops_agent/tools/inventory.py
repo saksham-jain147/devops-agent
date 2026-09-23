@@ -39,49 +39,64 @@ class ServiceLogsOutput(BaseModel):
     note: str | None = Field(None, description="informational message when no logs available")
 
 
+class ToolError(BaseModel):
+    error: str
+    tool: str
+    recoverable: bool
+
+
 @tool
-def list_services() -> ListServicesOutput:
+def list_services() -> ListServicesOutput | ToolError:
     """List all services with their current status, replicas, and error rate.
     Use this when the user asks about overall fleet state."""
-    svcs = _provider.list_services()
-    summaries = [
-        ServiceSummary(name=s.name, status=s.status, replicas=s.replicas, error_rate=s.error_rate)
-        for s in svcs
-    ]
-    return ListServicesOutput(services=summaries, total=len(summaries))
+    try:
+        svcs = _provider.list_services()
+        summaries = [
+            ServiceSummary(name=s.name,
+                           status=s.status,
+                           replicas=s.replicas,
+                           error_rate=s.error_rate)
+            for s in svcs
+        ]
+        return ListServicesOutput(services=summaries, total=len(summaries))
+    except Exception as e:
+        return ToolError(error=str(e), tool="list_services", recoverable=True)
 
 
 @tool
-def get_service_status(service_name: str) -> ServiceStatusOutput:
+def get_service_status(service_name: str) -> ServiceStatusOutput | ToolError:
     """Get current status, replicas, version, and error_rate for ONE service.
     Use after list_services to drill into a specific service.
 
     Args:
         service_name: exact name like "billing-svc"
     """
-    svc = _provider.get_service(service_name)
-    if not svc:
+    try:
+        svc = _provider.get_service(service_name)
+        if not svc:
+            return ServiceStatusOutput(
+                found=False,
+                service=None,
+                error=f"service '{service_name}' not found in the fleet",
+                requested_name=service_name,
+            )
         return ServiceStatusOutput(
-            found=False,
-            service=None,
-            error=f"service '{service_name}' not found in the fleet",
+            found=True,
+            service=ServiceSummary(
+                name=svc.name,
+                status=svc.status,
+                replicas=svc.replicas,
+                error_rate=svc.error_rate,
+            ),
+            error=None,
             requested_name=service_name,
         )
-    return ServiceStatusOutput(
-        found=True,
-        service=ServiceSummary(
-            name=svc.name,
-            status=svc.status,
-            replicas=svc.replicas,
-            error_rate=svc.error_rate,
-        ),
-        error=None,
-        requested_name=service_name,
-    )
+    except Exception as e:
+        return ToolError(error=str(e), tool="get_service_status", recoverable=True)
 
 
 @tool
-def get_service_logs(service_name: str, lines: int = 100) -> ServiceLogsOutput:
+def get_service_logs(service_name: str, lines: int = 100) -> ServiceLogsOutput | ToolError:
     """Return the most recent N lines of logs for a service.
     Use when diagnosing why a service is down or degraded.
 
@@ -89,22 +104,25 @@ def get_service_logs(service_name: str, lines: int = 100) -> ServiceLogsOutput:
         service_name: exact name like "billing-svc"
         lines: max log lines to return (default 20)
     """
-    logs = _provider.get_logs(service_name, lines)
-    if not logs:
+    try:
+        logs = _provider.get_logs(service_name, lines)
+        if not logs:
+            return ServiceLogsOutput(
+                service_name=service_name,
+                lines=[],
+                line_count=0,
+                truncated=False,
+                note=(
+                    f"no logs available for '{service_name}' — "
+                    "service may be new, quiet, or nonexistent"
+                ),
+            )
         return ServiceLogsOutput(
             service_name=service_name,
-            lines=[],
-            line_count=0,
-            truncated=False,
-            note=(
-                f"no logs available for '{service_name}' — "
-                "service may be new, quiet, or nonexistent"
-            ),
+            lines=logs,
+            line_count=len(logs),
+            truncated=(len(logs) == lines),
+            note=None,
         )
-    return ServiceLogsOutput(
-        service_name=service_name,
-        lines=logs,
-        line_count=len(logs),
-        truncated=(len(logs) == lines),
-        note=None,
-    )
+    except Exception as e:
+        return ToolError(error=str(e), tool="get_service_logs", recoverable=True)

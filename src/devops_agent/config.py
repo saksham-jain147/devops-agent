@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     prompt_version: str = "v1"
     audit_log_path: str = "audit.log"
 
+    # Agent Flakiness
+    mock_flaky_rate: float = 0.0
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
 

@@ -1,3 +1,6 @@
+import random
+
+from devops_agent.config import settings
 from devops_agent.infrastructure.base import ServiceState
 
 _SERVICES = {
@@ -29,11 +32,26 @@ _LOGS = {
 
 
 class MockProvider:
+    def __init__(self, flaky_rate: float | None = None):
+        # Priority: constructor arg > env var > 0.0 (never fail)
+        self.flaky_rate = (
+            flaky_rate
+            if flaky_rate is not None
+            else settings.mock_flaky_rate
+        )
+
+    def _maybe_fail(self, method: str) -> None:
+        if self.flaky_rate > 0 and random.random() < self.flaky_rate:
+            raise RuntimeError(f"Simulated transient failure in {method}")
+
     def list_services(self) -> list[ServiceState]:
+        self._maybe_fail("list_services")
         return list(_SERVICES.values())
 
     def get_service(self, name: str) -> ServiceState | None:
+        self._maybe_fail("get_service")
         return _SERVICES.get(name)
 
     def get_logs(self, name: str, lines: int = 100) -> list[str]:
+        self._maybe_fail("get_logs")
         return _LOGS.get(name, [])[:lines]
