@@ -54,7 +54,7 @@ def test_list_services_returns_tool_error_when_provider_raises(monkeypatch):
     def boom(*args, **kwargs):
         raise RuntimeError("simulated failure")
 
-    monkeypatch.setattr(inventory._provider, "list_services", boom)   # ← key change
+    monkeypatch.setattr(inventory._provider, "list_services", boom)  # ← key change
     result = list_services.invoke({})
 
     assert isinstance(result, ToolError)

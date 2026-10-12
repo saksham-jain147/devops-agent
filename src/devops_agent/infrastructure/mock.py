@@ -34,11 +34,7 @@ _LOGS = {
 class MockProvider:
     def __init__(self, flaky_rate: float | None = None):
         # Priority: constructor arg > env var > 0.0 (never fail)
-        self.flaky_rate = (
-            flaky_rate
-            if flaky_rate is not None
-            else settings.mock_flaky_rate
-        )
+        self.flaky_rate = flaky_rate if flaky_rate is not None else settings.mock_flaky_rate
 
     def _maybe_fail(self, method: str) -> None:
         if self.flaky_rate > 0 and random.random() < self.flaky_rate:

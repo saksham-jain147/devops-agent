@@ -5,11 +5,14 @@ import pytest
 from devops_agent.agent.llm_factory import build_llm
 
 
-@pytest.mark.parametrize("provider_name, mock_target", [
-    ("gemini", "langchain_google_genai.ChatGoogleGenerativeAI"),
-    ("groq", "langchain_groq.ChatGroq"),
-    ("anthropic", "langchain_anthropic.ChatAnthropic"),
-])
+@pytest.mark.parametrize(
+    "provider_name, mock_target",
+    [
+        ("gemini", "langchain_google_genai.ChatGoogleGenerativeAI"),
+        ("groq", "langchain_groq.ChatGroq"),
+        ("anthropic", "langchain_anthropic.ChatAnthropic"),
+    ],
+)
 def test_build_llm_dispatches_to_correct_provider(provider_name, mock_target):
     with patch(mock_target) as mock_cls:
         mock_cls.return_value = MagicMock()

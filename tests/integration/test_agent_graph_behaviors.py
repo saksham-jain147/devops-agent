@@ -24,7 +24,11 @@ SCENARIOS = [
             AIMessage(
                 content="",
                 tool_calls=[
-                    {"id": "1", "name": "get_service_status", "args": {"service_name": "billing-svc"}}
+                    {
+                        "id": "1",
+                        "name": "get_service_status",
+                        "args": {"service_name": "billing-svc"},
+                    }
                 ],
             ),
             AIMessage(

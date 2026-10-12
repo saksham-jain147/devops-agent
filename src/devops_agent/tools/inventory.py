@@ -52,10 +52,9 @@ def list_services() -> ListServicesOutput | ToolError:
     try:
         svcs = _provider.list_services()
         summaries = [
-            ServiceSummary(name=s.name,
-                           status=s.status,
-                           replicas=s.replicas,
-                           error_rate=s.error_rate)
+            ServiceSummary(
+                name=s.name, status=s.status, replicas=s.replicas, error_rate=s.error_rate
+            )
             for s in svcs
         ]
         return ListServicesOutput(services=summaries, total=len(summaries))

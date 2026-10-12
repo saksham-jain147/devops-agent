@@ -23,7 +23,6 @@ def ask(query: str):
     console.print(f"\n[dim]confidence={out.confidence} · prompt={out.prompt_version}[/dim]")
 
 
-
 @app.command()
 def version() -> None:
     """Show devops-agent version."""

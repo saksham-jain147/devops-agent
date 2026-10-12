@@ -11,4 +11,5 @@ def _isolate_provider_from_env(monkeypatch):
     """
     from devops_agent.infrastructure.mock import MockProvider
     from devops_agent.tools import inventory
+
     monkeypatch.setattr(inventory, "_provider", MockProvider(flaky_rate=0.0))
