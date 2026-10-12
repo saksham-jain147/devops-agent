@@ -56,8 +56,13 @@ def run_agent(query: str) -> AgentAnswer:
     from langchain_core.messages import HumanMessage
 
     graph = _get_graph()
-    config: RunnableConfig = {"callbacks": [_langfuse_handler]}
+    config: RunnableConfig = {
+        "callbacks": [_langfuse_handler],
+        "metadata": {"prompt_version": settings.prompt_version},
+        "run_name": f"agent-{settings.prompt_version}",
+    }
     out = graph.invoke({"messages": [HumanMessage(content=query)]}, config=config)
+
     _langfuse.flush()
     return build_agent_answer(out["messages"])
 

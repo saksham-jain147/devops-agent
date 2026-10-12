@@ -36,7 +36,7 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "-v"
+addopts = "--cov=src/devops_agent --cov-report=term-missing --cov-fail-under=60"
 pythonpath = ["src"]
 
 [tool.ruff]
