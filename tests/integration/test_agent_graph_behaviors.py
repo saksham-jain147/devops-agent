@@ -4,7 +4,6 @@ from langchain_core.messages import AIMessage
 
 from devops_agent.api.server import app
 
-
 SCENARIOS = [
     pytest.param(
         "list all services",

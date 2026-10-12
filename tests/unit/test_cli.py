@@ -1,5 +1,6 @@
-from typer.testing import CliRunner
 from unittest.mock import patch
+
+from typer.testing import CliRunner
 
 from devops_agent.agent.output import AgentAnswer, ToolTrace
 from devops_agent.cli import app
